@@ -5,7 +5,7 @@
 # All Rights Reserved.
 # Licensed under the Perl Artistic License.
 #
-# Version: 0.01
+# Version: 0.20
 
 package MathML::Entities::Approximate;
 
@@ -15,7 +15,7 @@ require Exporter;
 
 our @ISA = qw(Exporter MathML::Entities);
 our @EXPORT = qw( name2approximated name2numbered name2utf8 );
-our $VERSION = '0.10';
+our $VERSION = '0.20';
 
 our %APPROXIMATES = (
 	'AElig'		=>	'A',
@@ -221,6 +221,17 @@ sub name2approximated {
 
 }
 
+sub getSet {
+  # get, or set-and-get, a key-value pair from the lookup table
+  my ($key, $value) = @_;
+
+  if ($key) {
+    $APPROXIMATES{$key} = $value if $value;
+    return $APPROXIMATES{$key};
+  };
+  return undef;
+}
+
 sub _convert2approximated {
    # this is the actual lookup routine
    my $reference = shift;
@@ -238,11 +249,11 @@ __END__
 
 =head1 NAME
 
-  MathML::Entities::Approximate
+  MathML::Entities::Approximate - Returns approximated ASCII characters for XHTML+MathML Named Entities
 
 =head1 SYNOPSIS
 
-A subclass of MathML::Entities that supplies ASCII approximate characters for XHTML+MathML Named Entities.
+A subclass of MathML::Entities that supplies ASCII-approximate characters for XHTML+MathML Named Entities.
 
   use lib (getpwnam('sdadmin'))[7] . '/perlib';
   use MathML::Entities::Approximate;
@@ -255,28 +266,54 @@ A subclass of MathML::Entities that supplies ASCII approximate characters for XH
   # convert to standard ASCII
   $ascii   = name2approximated($html) # <strong>avancee</strong>
 
+  # Muck around with the lookup table...
+  MathML::Entities::Approximate::getSet(aacute);    # returns 'a'
+  MathML::Entities::Approximate::getSet(aacute, z); # returns 'z'
+  MathML::Entities::Approximate::getSet(aacute);    # now returns 'z'
+
 =head1 DESCRIPTION
 
-MathML::Entities::Approximated is a content conversion filter for named
+MathML::Entities::Approximate is a content conversion filter for named
 XHTML+MathML entities. There are over two thousand named entities in the
-XHTML+MathML DTD, but only a fraction of them are variants on standard 
+XHTML+MathML DTD, however only a fraction of them are variants on standard 
 ASCII characters.
 
-Named Entities are converted to a reasonable ASCII (7-bit ASCII set), or removed from the string.
+A string is parsed and every Named Entity is converted to a reasonable ASCII (7-bit ASCII set), or removed from the string.
 
 =head1 FUNCTIONS
 
-There is only one function, which is exported by default.
+There two functions, one of which is exported by default.
 
 =over 4
 
 =item * name2approximated
 
+(Exported by default)
+
 XHTML+MathML named entities in the argument of C<name2approximated()> are replaced by the corresponding 7-bit ASCII character. Any entitiy which cannot be approximated is removed.
+
+=item * getSet
+
+(Never Exported)
+
+This method is provided to allow users to extend the internal C<%APPROXIMATES> lookup table: either alter an existing entry [for the life of the process] or add new entities.
+
+Of course, for a large update to the lookup table, you have the option of:
+
+  %MathML::Entities::Approximate:APPROXIMATES = (
+    %MathML::Entities::Approximate:APPROXIMATES,
+    'foobar' => 'fb',         # LOWERCASE WELL SCUNNERED
+    'FooBar' => 'FB',         # UPPERCASE WELL SCUNNERED
+    'landrover' => 'landie',  # LOWERCASE PROPER MOTOR
+    'LandRover' => 'Landie'   # UPPERCASE PROPER MOTOR
+  );
+
+
+=back
 
 =head1 AUTHOR
 
-Ian Stuart E<lt>Ian.Stuart@ed.ac.uk<gt>E
+Ian Stuart E<lt>Ian.Stuart@ed.ac.ukE<gt>
 
 =head1 COPYRIGHT
 
